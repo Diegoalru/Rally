@@ -28,8 +28,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.compose.rally.ui.components.RallyTabRow
 import com.example.compose.rally.ui.theme.RallyTheme
 import androidx.navigation.compose.rememberNavController
@@ -50,13 +53,18 @@ class RallyActivity : ComponentActivity() {
 @Composable
 fun RallyApp() {
     RallyTheme {
-        var currentScreen: RallyDestination by remember { mutableStateOf(Overview) }
         val navController = rememberNavController()
+        val currentBackStack by navController.currentBackStackEntryAsState()
+        val currentDestination = currentBackStack?.destination
+        val currentScreen = rallyTabRowScreens.find { it.route == currentDestination?.route } ?: Overview
+
         Scaffold(
             topBar = {
                 RallyTabRow(
                     allScreens = rallyTabRowScreens,
-                    onTabSelected = { screen -> currentScreen = screen },
+                    onTabSelected = { newScreen ->
+                        navController.navigateSingleTopTo(newScreen.route)
+                    },
                     currentScreen = currentScreen
                 )
             }
@@ -77,5 +85,25 @@ fun RallyApp() {
                 }
             }
         }
+    }
+}
+
+/**
+ * Extension function for NavHostController to navigate to a given route
+ * ensuring that the destination is launched as a single top and the state is restored.
+ *
+ * @param route The route to navigate to.
+ */
+fun NavHostController.navigateSingleTopTo(route: String) {
+    this.navigate(route) {
+        // Pop up to the start destination of the graph to avoid building up a large stack of destinations
+        popUpTo(
+            this@navigateSingleTopTo.graph.findStartDestination().id
+        ) {
+            saveState = true // Save the state of the popped destination
+        }
+
+        launchSingleTop = true // Avoid multiple copies of the same destination
+        restoreState = true // Restore the state of the destination if it was previously saved
     }
 }
