@@ -99,12 +99,17 @@ dependencies {
     debugImplementation "androidx.compose.ui:ui-tooling"
 
     // Navigation
-    implementation "androidx.navigation:navigation-compose:2.7.7"
+    def composeNavigationVersion = "2.7.7"
+    implementation "androidx.navigation:navigation-compose:$composeNavigationVersion"
+    androidTestImplementation "androidx.navigation:navigation-testing:$composeNavigationVersion"
 
     // Testing dependencies
     androidTestImplementation "androidx.arch.core:core-testing:2.2.0"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:3.6.0"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.6.0"
+
+    implementation "androidx.tracing:tracing:1.1.0"
+    androidTestImplementation "androidx.tracing:tracing:1.1.0"
 
     // Compose testing dependencies
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
